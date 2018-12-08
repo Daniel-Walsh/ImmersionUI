@@ -37,6 +37,12 @@ frame:RegisterEvent("UPDATE_FACTION"); -- Fired when the player gains or loses f
 
 local imui = nil;
 
+local function alert(message)
+
+	print("|cFFFF0000Immersion UI:|cFFFF9900 " .. message)
+
+end
+
 local function toggleChat(hideit)
 
 	if hideit then
@@ -47,6 +53,24 @@ local function toggleChat(hideit)
 		ChatFrameMenuButton:Show();
 	end
 	for i=1,NUM_CHAT_WINDOWS do for _,v in pairs{"","Tab"}do local f=_G["ChatFrame"..i..v]if hideit then f.v=f:IsVisible()end f.ORShow=f.ORShow or f.Show f.Show=hideit and f.Hide or f.ORShow if f.v then f:Show()end end end
+
+end
+
+local function toggleCompass(hideit)
+
+	if hideit then
+		IMUICompass:Hide();
+		IMUICompassBG:Hide();
+		IMUICompassDIAL:Hide();
+		IMUICompassGLARE:Hide();
+		IMUICompassNORTH:Hide();
+	else
+		IMUICompass:Show();
+		IMUICompassBG:Show();
+		IMUICompassDIAL:Show();
+		IMUICompassGLARE:Show();
+		IMUICompassNORTH:Show();
+	end
 
 end
 
@@ -62,7 +86,8 @@ local function unfadeFrames()
 
 	toggleChat(false)
 
-	--BuffFrame:SetPoint("TOPRIGHT"); ??? --- need to find the detault point and reset this still
+
+	BuffFrame:SetPoint("TOPRIGHT",-205,-13); --move the buff bar back to the default position
 
 	BuffFrame:SetAlpha(1);
 	MainMenuBarArtFrame:SetAlpha(1);
@@ -73,7 +98,8 @@ local function unfadeFrames()
 	--ExhaustionTick:SetAlpha(1);
 	--ReputationWatchBar:SetAlpha(1);
 	StatusTrackingBarManager:SetAlpha(1);
-
+	MultiBarLeft:SetAlpha(1);
+	MultiBarRight:SetAlpha(1);
 	--ObjectiveTrackerFrame.Temphide = function() ObjectiveTrackerFrame:Hide() end; ObjectiveTrackerFrame:SetScript("OnShow", ObjectiveTrackerFrame.Temphide)
 	--ObjectiveTrackerFrame.Temphide = "";
 	--ObjectiveTrackerFrame:Show()
@@ -99,6 +125,8 @@ local function fadeFrames()
 	MicroButtonAndBagsBar:SetAlpha(OutCombatAlpha);
 	--MainMenuExpBar:SetAlpha(OutCombatAlpha);
 	StatusTrackingBarManager:SetAlpha(OutCombatAlpha);
+	MultiBarLeft:SetAlpha(OutCombatAlpha);
+	MultiBarRight:SetAlpha(OutCombatAlpha);
 	--ExhaustionTick:SetAlpha(OutCombatAlpha);
 	--ReputationWatchBar:SetAlpha(OutCombatAlpha);
 
@@ -157,6 +185,12 @@ local function initCompass()
 
 
 	local function onUpdate(self,elapsed)
+
+		-- Force the buff frame to the top right corner, if it's not already there
+		if imui.enabled then
+			BuffFrame:SetPoint("TOPRIGHT", 0, 0);
+		end
+
 		if isInstance then
 
 		--ReloadUI();
@@ -172,15 +206,11 @@ local function initCompass()
 	local f = CreateFrame("frame")
 	f:SetScript("OnUpdate", onUpdate)
 
+	toggleCompass(imui.hidecompass)
+
 end
 
-local function killCompass()
-	IMUICompass:Hide();
-	IMUICompassBG:Hide();
-	IMUICompassDIAL:Hide();
-	IMUICompassGLARE:Hide();
-	IMUICompassNORTH:Hide();
-end
+
 
 
 function frame:OnEvent(event, arg1)
@@ -197,11 +227,16 @@ function frame:OnEvent(event, arg1)
 		if imui.enabled == nil then
 			imui.enabled = false
 		end
+		if imui.hidecompass == nil then
+			imui.hidecompass = false
+		end
 
 		if imui.enabled == false then
 			print("Thanks for installing |cFFFF9900Immersion UI|cFFFFFFFF!");
 			print("To enable |cFFFF9900Immersion UI|cFFFFFFFF, type |cFF66FF00/imui on");
 		end
+
+		initCompass();
 
 	elseif event == "PLAYER_ENTERING_WORLD" then
 
@@ -210,16 +245,32 @@ function frame:OnEvent(event, arg1)
 
 		if imui.enabled then
 
+			fadeFrames();
+
 			if isInstance then
-				print("|cFFFF0000Immersion UI:|cFFFF9900You've just entered an instanced area. The addon has been auto-disabled and will auto-enable when you leave this area.")
-				unfadeFrames()
+				if not imui.hidecompass then
+					alert("You've just entered an instanced area. The compass has been auto-disabled and will auto-enable when you leave this area.");
+					toggleCompass(true);
+				end
+				--unfadeFrames();
 			else
-				fadeFrames()
-				initCompass()
+				--fadeFrames();
+				--initCompass();
+				-- if not imui.hidecompass then 
+				-- 	toggleCompass(false);
+				-- end
+				toggleCompass(imui.hidecompass);
 			end
 
 		end
 
+	-- elseif event == "PLAYTIME_CHANGED" then
+
+	-- 	if imui.enabled then
+
+	-- 		BuffFrame:SetPoint("TOPRIGHT");
+
+	-- 	end
 	
 	elseif event == "PLAYER_REGEN_DISABLED" then
 		if imui.enabled and not isInstance then
@@ -228,6 +279,8 @@ function frame:OnEvent(event, arg1)
 			MicroButtonAndBagsBar:SetAlpha(InCombatAlpha);
 			--MainMenuExpBar:SetAlpha(InCombatAlpha);
 			StatusTrackingBarManager:SetAlpha(InCombatAlpha);
+			MultiBarLeft:SetAlpha(InCombatAlpha);
+			MultiBarRight:SetAlpha(InCombatAlpha);
 			--ExhaustionTick:SetAlpha(InCombatAlpha);
 			--ReputationWatchBar:SetAlpha(InCombatAlpha);
 			BuffFrame:SetAlpha(InCombatAlpha);
@@ -240,6 +293,8 @@ function frame:OnEvent(event, arg1)
 			MicroButtonAndBagsBar:SetAlpha(OutCombatAlpha);
 			--MainMenuExpBar:SetAlpha(OutCombatAlpha);
 			StatusTrackingBarManager:SetAlpha(OutCombatAlpha);
+			MultiBarLeft:SetAlpha(OutCombatAlpha);
+			MultiBarRight:SetAlpha(OutCombatAlpha);
 			--ExhaustionTick:SetAlpha(OutCombatAlpha);
 			--ReputationWatchBar:SetAlpha(OutCombatAlpha);
 			BuffFrame:SetAlpha(OutCombatAlpha);
@@ -249,6 +304,8 @@ function frame:OnEvent(event, arg1)
 		if imui.enabled and not isInstance then
 			--MainMenuExpBar:SetAlpha(OutCombatAlpha);
 			StatusTrackingBarManager:SetAlpha(OutCombatAlpha);
+			MultiBarLeft:SetAlpha(OutCombatAlpha);
+			MultiBarRight:SetAlpha(OutCombatAlpha);
 			--ReputationWatchBar:SetAlpha(OutCombatAlpha);
 		end
 
@@ -272,11 +329,13 @@ IMUICompass:SetScript("OnMouseUp", function(...)
     if IMUICompass.timer == time() and IMUICompass.startTimer then
         IMUICompass.startTimer = false
 
-        if not imui.enabled then
+		if not imui.enabled then
+			alert("IMUI is now enabled.")
 			imui.enabled = true;
 			fadeFrames()
 			--initCompass()
 		else
+			alert("IMUI is now disabled.")
 			imui.enabled = false;
 			unfadeFrames()
 			--killCompass()
@@ -297,36 +356,56 @@ SlashCmdList["IMMERSIONUI"] = function(msg)
 
 	if msg == "on" then
 
-		if isInstance == true then
-			print("|cFFFF0000Immersion UI:|cFFFF9900You are currently in an instanced area. You can enable the addon again when you leave this area.")
-		else
+		-- if isInstance == true then
+		-- 	print("|cFFFF0000Immersion UI:|cFFFF9900You are currently in an instanced area. You can enable the addon again when you leave this area.")
+		-- else
 			if not imui.enabled then
+				alert("IMUI is now enabled.")
 				imui.enabled = true;
 				fadeFrames()
 				initCompass()
 			end
-		end
+		-- end
 
 	elseif msg == "off" then
 		
 		if imui.enabled then
+			alert("IMUI is now disabled.")
 			imui.enabled = false;
 			unfadeFrames()
-			killCompass()
+			toggleCompass(true);
 		end
 
 	elseif msg == "hidechat" then
 
 		if not imui.hidechat then
 			imui.hidechat = true;
-			toggleChat(true)
+			alert("Chat will now be hidden.")
+			toggleChat(true);
 		end
 
 	elseif msg == "showchat" then
 
 		if imui.hidechat then
 			imui.hidechat = false;
-			toggleChat(false)
+			alert("Chat will now be shown.")
+			toggleChat(false);
+		end
+
+	elseif msg == "showcompass" then
+
+		if imui.hidecompass then
+			imui.hidecompass = false;
+			alert("Compass will now be shown.")
+			toggleCompass(false);
+		end
+
+	elseif msg == "hidecompass" then
+
+		if not imui.hidecompass then
+			imui.hidecompass = true;
+			alert("Compass will now be hidden.")
+			toggleCompass(true);
 		end
 	
 	elseif msg == "help" then
@@ -336,6 +415,8 @@ SlashCmdList["IMMERSIONUI"] = function(msg)
 		print("/imui off – Disables the addon");
 		print("/imui hidechat – Hides the chat frames");
 		print("/imui showchat – Shows the chat frames");
+		print("/imui hidecompass – Hides the compass");
+		print("/imui showcompass – Shows the compass");
 		print("/imui help – Displays this list");
 	
 	else
