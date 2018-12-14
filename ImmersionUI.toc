@@ -1,8 +1,9 @@
-## Interface: 80000
+## Interface: 80100
+## X-Min-Interface: 80000
 ## Title: Immersion UI
 ## Notes: Hides or fades almost all UI elements for a more immersive gameplay experience
 ## Author: theDeedubbs
-## Version: v0.1.9
+## Version: v0.1.10
 ## SavedVariablesPerCharacter: IMUI_SavedVars
 
 ImmersionUI.lua
