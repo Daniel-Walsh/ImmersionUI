@@ -89,6 +89,9 @@ local function unfadeFrames()
 
 	BuffFrame:SetPoint("TOPRIGHT",-205,-13); --move the buff bar back to the default position
 
+	-- Resetting alpha to the Minimap Cluster and the objective tracker!
+	MinimapCluster:SetAlpha(1);
+	ObjectiveTrackerFrame:SetAlpha(1);
 	BuffFrame:SetAlpha(1);
 	MainMenuBarArtFrame:SetAlpha(1);
 	StanceBarFrame:SetAlpha(1);
@@ -108,8 +111,9 @@ end
 
 local function fadeFrames()
 
-	MinimapCluster:Hide();
-	ObjectiveTrackerFrame:Hide();
+	-- Blocking off the  hiding of the minimap cluster and the OT
+	-- MinimapCluster:Hide();
+	-- ObjectiveTrackerFrame:Hide();
 	PlayerFrame:Hide();
 	TargetFrame:SetAlpha(0);
 	VehicleSeatIndicator:Hide();
@@ -119,6 +123,9 @@ local function fadeFrames()
 
 	BuffFrame:SetPoint("TOPRIGHT");
 
+	-- Adding corresponding OutCombatAlphas to fade MinimapCluster and the OTF
+	MinimapCluster:SetAlpha(OutCombatAlpha);
+	ObjectiveTrackerFrame:SetAlpha(OutCombatAlpha);
 	BuffFrame:SetAlpha(OutCombatAlpha);
 	MainMenuBarArtFrame:SetAlpha(OutCombatAlpha);
 	StanceBarFrame:SetAlpha(OutCombatAlpha);
@@ -180,7 +187,9 @@ local function initCompass()
 	IMUICompass:SetScript("OnDragStop", CompassStopMoving)
 
 	if imui.point then
-		IMUICompass:SetPoint(imui.point, imui.relativeTo, imui.relativePoint, imui.xOfs, imui.yOfs);
+		--  Known issue, This line of code is not compliant with the Blizzards UI changes as of 8.2 Commenting it off for now, seems to mostly restore functionality to the compass. Ideally when setting points,
+		--  This frame should now be tethered to: WorldFrame , Or something of the sort.
+		-- IMUICompass:SetPoint(imui.point, imui.relativeTo, imui.relativePoint, imui.xOfs, imui.yOfs);
 	end
 
 
@@ -333,12 +342,12 @@ IMUICompass:SetScript("OnMouseUp", function(...)
 			alert("IMUI is now enabled.")
 			imui.enabled = true;
 			fadeFrames()
-			--initCompass()
+			-- initCompass()
 		else
 			alert("IMUI is now disabled.")
 			imui.enabled = false;
 			unfadeFrames()
-			--killCompass()
+			-- killCompass()
 		end
     else
         IMUICompass.startTimer = true
